@@ -160,10 +160,11 @@ def move(miner, grid, row, col):
   x, y = miner.get_pos()
   front = grid[x][y].get_front()
   grid[x][y].reset()
+  miner.update_pos(row, col)
   grid[row][col].front = front
+  grid[row][col].front_pos = grid[x][y].get_front_pos()
   grid[row][col].update_front(grid)
   grid[row][col].miner()
-  miner.update_pos(row, col)
 
 
 def main(win, width, num_rows):
@@ -188,6 +189,7 @@ def main(win, width, num_rows):
       if pygame.mouse.get_pressed()[0]:  # LEFT
         x, y = miner.get_pos()
         grid[x][y].rotate_front(grid)
+
         # pos = pygame.mouse.get_pos()
         # row, col = get_clicked_pos(pos, ROWS, width)
         # if not grid[row][col].is_pit():

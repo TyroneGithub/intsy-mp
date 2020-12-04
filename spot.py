@@ -23,6 +23,7 @@ class Spot:
     self.width = width
     self.total_rows = total_rows
     self.front = None
+    self.front_pos = None
 
   def get_pos(self):
     return self.row, self.col
@@ -62,6 +63,9 @@ class Spot:
 
   def get_front(self):
     return self.front
+  
+  def get_front_pos(self):
+    return self.front_pos 
 
   def draw(self, win):
     pygame.draw.rect(win, self.color,(self.x, self.y, self.width, self.width))
@@ -96,6 +100,8 @@ class Spot:
 
   def init_front(self, grid):
     self.front = grid[self.row + 1][self.col]
+    self.front_pos = 'right'
+    print(self.front_pos)
     self.front.neighbor()
 
   def rotate_front(self, grid):
@@ -103,41 +109,72 @@ class Spot:
     try:
       if (self.col < self.total_rows - 1
           and self.row < self.total_rows - 1
-          and grid[self.row + 1][self.col].is_neighbor()):
+          and self.right_front(grid).is_neighbor()):
 
         self.front.reset()
-        self.front = grid[self.row][self.col + 1]
+        self.front = self.bottom_front(grid)
+        self.front_pos = 'bottom'
         self.front.neighbor()
 
-      elif self.col > 0 and grid[self.row - 1][self.col].is_neighbor():
+      elif self.col > 0 and self.left_front(grid).is_neighbor():
 
         self.front.reset()
-        self.front = grid[self.row][self.col - 1]
+        self.front = self.top_front(grid)
+        self.front_pos = 'top'
         self.front.neighbor()
 
-      elif self.row > 0 and grid[self.row][self.col + 1].is_neighbor():
+      elif self.row > 0 and self.bottom_front(grid).is_neighbor():
 
         self.front.reset()
-        self.front = grid[self.row - 1][self.col]
+        self.front = self.left_front(grid)
+        self.front_pos = 'left'
         self.front.neighbor()
 
       elif (self.row < self.total_rows - 1
-            and grid[self.row][self.col - 1].is_neighbor()):
-            
+            and self.top_front(grid).is_neighbor()):
         self.front.reset()
-        self.front = grid[self.row + 1][self.col]
+        self.front = self.right_front(grid)
+        self.front_pos = 'right'
         self.front.neighbor()
 
     except IndexError:
         print("index error bitch")
 
   def update_front(self, grid):
-
-    # if x > 0:
     self.front.reset()
-    self.front = grid[self.row + 1][self.col]
+    if (self.row >= self.total_rows - 1 and 
+          not (self.top_front(grid).is_neighbor() 
+          or self.left_front(grid).is_neighbor())):
+
+      self.front = self.bottom_front(grid)
+    elif (self.col >= 0 and not(self.top_front(grid).is_neighbor())):
+      self.front= self.right_front(grid)
+
+    else:
+      x, y = self.front.get_pos()
+      if self.front_pos == 'right':
+        self.front = self.right_front(grid)
+
+      elif self.front_pos == 'left':
+        self.front = self.left_front(grid)
+
+      elif self.front_pos == 'bottom' :
+        self.front = self.bottom_front(grid)
+
+      elif self.front_pos == 'top' :
+        self.front = self.top_front(grid)      
+
     self.front.neighbor()
-    # elif y > 0:
-    #     self.front.reset()
-    #     self.front = grid[self.row + 1][self.col + 1]
-    #     self.front.neighbor()
+  
+  def top_front(self,grid):
+    return grid[self.row][self.col - 1]
+
+  def bottom_front(self,grid):
+    return grid[self.row][self.col + 1]
+
+  def right_front(self, grid):
+    return grid[self.row + 1][self.col]
+
+  def left_front(self, grid):
+    return grid[self.row - 1][self.col]
+
