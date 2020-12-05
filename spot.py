@@ -109,21 +109,21 @@ class Spot:
     try:
       if (self.col < self.total_rows - 1
           and self.row < self.total_rows - 1
-          and self.right_front(grid).is_neighbor()):
+          and self.front_pos=='right'):
 
         self.front.reset()
         self.front = self.bottom_front(grid)
         self.front_pos = 'bottom'
         self.front.neighbor()
 
-      elif self.col > 0 and self.left_front(grid).is_neighbor():
+      elif self.col > 0 and self.front_pos=='left':
 
         self.front.reset()
         self.front = self.top_front(grid)
         self.front_pos = 'top'
         self.front.neighbor()
 
-      elif self.row > 0 and self.bottom_front(grid).is_neighbor():
+      elif self.row > 0 and self.front_pos=='bottom':
 
         self.front.reset()
         self.front = self.left_front(grid)
@@ -131,7 +131,7 @@ class Spot:
         self.front.neighbor()
 
       elif (self.row < self.total_rows - 1
-            and self.top_front(grid).is_neighbor()):
+            and self.front_pos=='top'):
         self.front.reset()
         self.front = self.right_front(grid)
         self.front_pos = 'right'
@@ -142,19 +142,19 @@ class Spot:
 
   def update_front(self, grid):
     self.front.reset()
-    if (self.row >= self.total_rows - 1 and 
-          not (self.top_front(grid).is_neighbor() 
-          or self.left_front(grid).is_neighbor())):
-
+    front_x, front_y = self.front.get_pos()
+    if (self.row >= self.total_rows - 1 and self.front_pos=='right'):
       self.front = self.bottom_front(grid)
-    elif (self.col >= 0 and not(self.top_front(grid).is_neighbor())):
+    elif (self.col == 0 and front_y == 0 and self.front_pos == 'top'):
       self.front= self.right_front(grid)
-
+    elif (self.row == 0 and self.front_pos == 'left'):
+      self.front = self.bottom_front(grid)
+    elif (self.col >= self.total_rows - 1 and self.front_pos == 'bottom'):
+      self.front = self.right_front(grid)
     else:
       x, y = self.front.get_pos()
       if self.front_pos == 'right':
         self.front = self.right_front(grid)
-
       elif self.front_pos == 'left':
         self.front = self.left_front(grid)
 

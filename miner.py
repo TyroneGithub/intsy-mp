@@ -180,6 +180,8 @@ def main(win, width, num_rows):
 
   while run:
     draw(win, grid, ROWS, width)
+    row, col = pit.get_pos()
+    grid[row][col].pit()
 
     for event in pygame.event.get():
 
