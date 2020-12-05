@@ -178,3 +178,14 @@ class Spot:
   def left_front(self, grid):
     return grid[self.row - 1][self.col]
 
+  def scan(self, grid, draw):
+    # self.rotate_front(grid)
+    # self.rotate_front(grid)
+    for i in range(4):
+      self.rotate_front(grid)
+      grid[self.row][self.col].miner()
+      draw()
+      pygame.time.delay(300)
+      # print("h")
+      
+

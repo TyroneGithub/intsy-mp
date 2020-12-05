@@ -134,7 +134,7 @@ def get_clicked_pos(pos, rows, width):
 
 
 def initialize_entities(grid):
-  miner = GameObj(0, 0, "miner")
+  miner = GameObj(0, 1, "miner")
   row, col = miner.get_pos()
   grid[row][col].miner()
   grid[row][col].init_front(grid)
@@ -156,15 +156,15 @@ def initialize_entities(grid):
   return miner, pit, beacon, gold
 
 
-def move(miner, grid, row, col):
+def move(miner, grid, row, col, win, ROWS, width):
   x, y = miner.get_pos()
   front = grid[x][y].get_front()
   grid[x][y].reset()
   miner.update_pos(row, col)
   grid[row][col].front = front
   grid[row][col].front_pos = grid[x][y].get_front_pos()
+  grid[row][col].scan(grid, lambda: draw(win, grid, ROWS, width))
   grid[row][col].update_front(grid)
-  grid[row][col].miner()
 
 
 def main(win, width, num_rows):
@@ -200,13 +200,13 @@ def main(win, width, num_rows):
       if event.type == pygame.KEYDOWN:
         x, y = miner.get_pos()
         if event.key == pygame.K_w:
-          move(miner, grid, x, y-1)
+          move(miner, grid, x, y-1, win, ROWS, width)
         if event.key == pygame.K_s:
-          move(miner, grid, x, y+1)
+          move(miner, grid, x, y+1, win, ROWS, width)
         if event.key == pygame.K_a:
-          move(miner, grid, x-1, y)
+          move(miner, grid, x-1, y, win, ROWS, width)
         if event.key == pygame.K_d:
-          move(miner, grid, x+1, y)
+          move(miner, grid, x+1, y, win, ROWS, width)
 
           # else:
           # 	print('fuck')
