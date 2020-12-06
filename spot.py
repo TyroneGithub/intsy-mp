@@ -13,23 +13,25 @@ TURQUOISE = (64, 224, 208)
 
 
 class Spot:
-  def __init__(self, row, col, width, total_rows):
+  def __init__(self, row, col, total_rows, game_obj):
     self.row = row
     self.col = col
-    self.x = row * width
-    self.y = col * width
+    # self.x = row * width
+    # self.y = col * width
     self.color = WHITE
     self.neighbors = []
-    self.width = width
+    # self.width = width
     self.total_rows = total_rows
     self.front = None
     self.front_pos = None
+    self.game_obj = game_obj
 
   def get_pos(self):
     return self.row, self.col
 
   def is_pit(self):
-    return self.color == RED
+    return self.game_obj.get_type()
+    # return self.color == RED
 
   def is_gold(self):
     return self.color == GREEN
@@ -67,8 +69,17 @@ class Spot:
   def get_front_pos(self):
     return self.front_pos 
 
-  def draw(self, win):
-    pygame.draw.rect(win, self.color,(self.x, self.y, self.width, self.width))
+  def get_obj(self):
+    return self.game_obj
+  
+  def get_color(self):
+    return self.color
+
+  def set_obj(self, game_obj):
+    self.game_obj = game_obj
+
+  # def draw(self, win):
+  #   pygame.draw.rect(win, self.color,(self.x, self.y, self.width, self.width))
 
   def update_neighbors(self, grid):
     self.neighbors = []
@@ -99,22 +110,22 @@ class Spot:
         neighbor.reset()
 
   def init_front(self, grid):
-    self.front = grid[self.row + 1][self.col]
+    self.front = grid[self.row][self.col + 1]
     self.front_pos = 'right'
     print(self.front_pos)
     self.front.neighbor()
 
   def rotate_front(self, grid):
     front_row, front_col = self.front.get_pos()
+    self.neighbors = []
     try:
-      if (self.col < self.total_rows - 1
-          and self.row < self.total_rows - 1
-          and self.front_pos=='right'):
+      if self.col < self.total_rows - 1 and self.front_pos=='right':
 
         self.front.reset()
         self.front = self.bottom_front(grid)
         self.front_pos = 'bottom'
         self.front.neighbor()
+        self.neighbors.append(self.bottom_front(grid))
 
       elif self.col > 0 and self.front_pos=='left':
 
@@ -122,20 +133,23 @@ class Spot:
         self.front = self.top_front(grid)
         self.front_pos = 'top'
         self.front.neighbor()
+        self.neighbors.append(self.top_front(grid))
 
-      elif self.row > 0 and self.front_pos=='bottom':
+      elif self.row < self.total_rows - 1 and self.front_pos=='bottom':
 
         self.front.reset()
         self.front = self.left_front(grid)
         self.front_pos = 'left'
         self.front.neighbor()
+        self.neighbors.append(self.left_front(grid))
 
-      elif (self.row < self.total_rows - 1
-            and self.front_pos=='top'):
+      elif self.row > 0 and self.front_pos=='top':
         self.front.reset()
         self.front = self.right_front(grid)
         self.front_pos = 'right'
         self.front.neighbor()
+        self.neighbors.append(self.right_front(grid))
+
 
     except IndexError:
         print("index error bitch")
@@ -143,13 +157,13 @@ class Spot:
   def update_front(self, grid):
     self.front.reset()
     front_x, front_y = self.front.get_pos()
-    if (self.row >= self.total_rows - 1 and self.front_pos=='right'):
+    if (self.col >= self.total_rows - 1 and self.front_pos=='right'):
       self.front = self.bottom_front(grid)
-    elif (self.col == 0 and front_y == 0 and self.front_pos == 'top'):
+    elif (self.row == 0 and front_y == 0 and self.front_pos == 'top'):
       self.front= self.right_front(grid)
-    elif (self.row == 0 and self.front_pos == 'left'):
+    elif (self.col == 0 and self.front_pos == 'left'):
       self.front = self.bottom_front(grid)
-    elif (self.col >= self.total_rows - 1 and self.front_pos == 'bottom'):
+    elif (self.row >= self.total_rows - 1 and self.front_pos == 'bottom'):
       self.front = self.right_front(grid)
     else:
       x, y = self.front.get_pos()
@@ -166,16 +180,16 @@ class Spot:
 
     self.front.neighbor()
   
-  def top_front(self,grid):
+  def left_front(self,grid):
     return grid[self.row][self.col - 1]
 
-  def bottom_front(self,grid):
+  def right_front(self,grid):
     return grid[self.row][self.col + 1]
 
-  def right_front(self, grid):
+  def bottom_front(self, grid):
     return grid[self.row + 1][self.col]
 
-  def left_front(self, grid):
+  def top_front(self, grid):
     return grid[self.row - 1][self.col]
 
   def scan(self, grid, draw):

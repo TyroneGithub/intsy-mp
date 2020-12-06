@@ -3,8 +3,8 @@ import math
 from queue import PriorityQueue
 from spot import Spot
 
-WIDTH = 400
-WIN = pygame.display.set_mode((WIDTH, WIDTH))
+pygame.init()
+WIN = pygame.display.set_mode((1000, 700))
 pygame.display.set_caption("A* Path Finding Algorithm")
 
 RED = (255, 0, 0)
@@ -28,9 +28,14 @@ class GameObj:
   def get_pos(self):
     return self.row, self.col
 
+  def get_type(self):
+    return self.type
+    
   def update_pos(self, row, col):
     self.row = row
     self.col = col
+
+
 
 
 def h(p1, p2):
@@ -92,68 +97,83 @@ def algorithm(draw, grid, start, end):
   return False
 
 
-def make_grid(rows, width):
+
+
+# def make_grid(rows, width):
+#   grid = []
+#   gap = width // rows
+#   for i in range(rows):
+#     grid.append([])
+#     for j in range(rows):
+#       spot = Spot(i, j, gap, rows, None)
+#       grid[i].append(spot)
+
+#   return grid
+
+
+# def draw_grid(win, rows, width):
+#   gap = width // rows
+#   for i in range(rows):
+#     pygame.draw.line(win, GREY, (0, i * gap), (width, i * gap))
+#     for j in range(rows):
+#       pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
+
+
+# def draw(win, grid, rows, width):
+#   win.fill(WHITE)
+
+#   for row in grid:
+#     for spot in row:
+#       spot.draw(win)
+
+#   draw_grid(win, rows, width)
+#   pygame.display.update()
+
+
+# def get_clicked_pos(pos, rows, width):
+#   gap = width // rows
+#   y, x = pos
+
+#   row = y // gap
+#   col = x // gap
+
+#   return row, col
+
+
+def init_grid(rows):
   grid = []
-  gap = width // rows
-  for i in range(rows):
+  for row in range(rows):
     grid.append([])
-    for j in range(rows):
-      spot = Spot(i, j, gap, rows)
-      grid[i].append(spot)
+    for column in range(rows):
+      spot = Spot(row, column, rows, None)
+      grid[row].append(spot)
 
   return grid
 
+def draw_grid(width, dim, margin, grid, win):
+  for row in range(dim):
+    for column in range(dim):
+      color = grid[row][column].get_color()
+      pygame.draw.rect(win, color, [(margin + width) * column + margin,
+                    (margin + width) * row + margin,width,width])
 
-def draw_grid(win, rows, width):
-  gap = width // rows
-  for i in range(rows):
-    pygame.draw.line(win, GREY, (0, i * gap), (width, i * gap))
-    for j in range(rows):
-      pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
-
-
-def draw(win, grid, rows, width):
-  win.fill(WHITE)
-
-  for row in grid:
-    for spot in row:
-      spot.draw(win)
-
-  draw_grid(win, rows, width)
-  pygame.display.update()
-
-
-def get_clicked_pos(pos, rows, width):
-  gap = width // rows
-  y, x = pos
-
-  row = y // gap
-  col = x // gap
+def get_clicked_pos(pos, width, margin):
+  row = pos[1] // (width + margin)
+  col= pos[0] // (width+margin)
 
   return row, col
 
 
 def initialize_entities(grid):
-  miner = GameObj(0, 1, "miner")
+  miner = GameObj(0, 0, "miner")
   row, col = miner.get_pos()
+  grid[row][col].set_obj(miner)
   grid[row][col].miner()
   grid[row][col].init_front(grid)
 
   # grid[row][col].update_neighbors(grid)
 
-  pit = GameObj(1, 2, "pit")
-  row, col = pit.get_pos()
-  grid[row][col].pit()
-
-  beacon = GameObj(4, 5, "beacon")
-  row, col = beacon.get_pos()
-  grid[row][col].beacon()
-
-  gold = GameObj(3, 5, "gold")
-  row, col = gold.get_pos()
-  grid[row][col].gold()
-
-  return miner, pit, beacon, gold
+  return miner
 
 
 def move(miner, grid, row, col, win, ROWS, width):
@@ -163,50 +183,138 @@ def move(miner, grid, row, col, win, ROWS, width):
   miner.update_pos(row, col)
   grid[row][col].front = front
   grid[row][col].front_pos = grid[x][y].get_front_pos()
-  grid[row][col].scan(grid, lambda: draw(win, grid, ROWS, width))
+  # grid[row][col].scan(grid, lambda: draw_grid(win, grid, ROWS, width))
   grid[row][col].update_front(grid)
+  grid[row][col].miner()
 
 
-def main(win, width, num_rows):
+def text_init(texts, font, colors):
+  # text = font.render('Pit', False, BLACK)
+  # textRect = text.get_rect()
+  # textRect.center = (550, 50)
+  text_list = []
+  text_rect_list = []
+  y = 50
+  for i in range(len(texts)):
+    text_obj = font.render(texts[i], False, colors[i])
+    text_rect = text_obj.get_rect()
+    text_rect.center = (635, y)
+    y += 50
+    text_list.append(text_obj)
+    text_rect_list.append(text_rect)
+  
+  return text_list, text_rect_list
+
+def render_text(texts, text_rects, win):
+
+  for i in range(len(texts)):
+    win.blit(texts[i], text_rects[i])
+
+
+def main(win, num_rows):
   ROWS = int(num_rows)
-  grid = make_grid(ROWS, width)
-
+  grid = init_grid(ROWS)
+  width = 1000 // (ROWS * 2)
+  print(len(grid), len(grid[0]))
+  margin = 1
   start = None
   end = None
 
   run = True
 
-  miner, pit, beacon, gold = initialize_entities(grid)
+  miner = initialize_entities(grid)
+
+  toggle_pit = False
+  toggle_gold = False
+  toggle_beacon = False
+
+  # pit_color = RED
+  # gold_color = GREEN
+  # beacon_color = TURQUOISE
+
+  area = pygame.Rect(0, 0, 1030//2, 515)
+
+
+  # font = pygame.font.SysFont('Arial', 24)
+  # text = font.render('Pit', False, BLACK)
+  # textRect = text.get_rect()
+  # textRect.center = (550, 50)
+
+  texts = ['Pit [F] to toggle', 'Beacon [B] to toggle', 'Gold [G] to toggle']
+  font = pygame.font.SysFont('Arial', 24)
+
 
   while run:
-    draw(win, grid, ROWS, width)
-    row, col = pit.get_pos()
-    grid[row][col].pit()
+    pit_color = RED if toggle_pit else BLACK
+    gold_color = GREEN if toggle_gold else BLACK
+    beacon_color = TURQUOISE if toggle_beacon else BLACK
+    
+    colors = [pit_color, beacon_color, gold_color]
+
+    text, rect = text_init(texts, font, colors)
 
     for event in pygame.event.get():
 
       if event.type == pygame.QUIT:
         run = False
 
-      if pygame.mouse.get_pressed()[0]:  # LEFT
-        x, y = miner.get_pos()
-        grid[x][y].rotate_front(grid)
 
-        # pos = pygame.mouse.get_pos()
-        # row, col = get_clicked_pos(pos, ROWS, width)
-        # if not grid[row][col].is_pit():
-        #     move(miner, grid, row, col)
+      if event.type == pygame.MOUSEBUTTONDOWN:
+        pos = pygame.mouse.get_pos()
+        if event.button == 1 and area.collidepoint(pos):
+          row, col = get_clicked_pos(pos, width, margin)
+          print(row, col)
+          if not (toggle_pit or toggle_beacon or toggle_gold):
+            x, y = miner.get_pos()
+            grid[x][y].rotate_front(grid)
+
+          if toggle_pit:
+            pit = GameObj(row, col, "pit")
+            grid[row][col].set_obj(pit)
+            grid[row][col].pit()
+
+          
+          if toggle_beacon:
+            beacon = GameObj(row, col, "beacon")
+            grid[row][col].set_obj(beacon)
+            grid[row][col].beacon()
+          
+          if toggle_gold:
+            gold = GameObj(row, col, "gold")
+            grid[row][col].set_obj(gold)
+            grid[row][col].gold()       
+            
       
       if event.type == pygame.KEYDOWN:
         x, y = miner.get_pos()
-        if event.key == pygame.K_w:
-          move(miner, grid, x, y-1, win, ROWS, width)
-        if event.key == pygame.K_s:
-          move(miner, grid, x, y+1, win, ROWS, width)
         if event.key == pygame.K_a:
-          move(miner, grid, x-1, y, win, ROWS, width)
+          move(miner, grid, x, y-1, win, ROWS, width)
         if event.key == pygame.K_d:
+          move(miner, grid, x, y+1, win, ROWS, width)
+        if event.key == pygame.K_w:
+          move(miner, grid, x-1, y, win, ROWS, width)
+        if event.key == pygame.K_s:
           move(miner, grid, x+1, y, win, ROWS, width)
+          
+        if event.key == pygame.K_f: # toggle pit
+          toggle_pit = not toggle_pit
+          toggle_gold = False
+          toggle_beacon = False
+          # text[0] = font.render('Pit [F] to toggle', False, pit_color)
+
+        if event.key == pygame.K_g: # toggle gold
+          toggle_pit = False
+          toggle_gold = not toggle_gold
+          toggle_beacon = False
+          # text[1] = font.render('Gold [G] to toggle', False, gold_color)
+
+        if event.key == pygame.K_b: # toggle beacon
+          toggle_pit = False
+          toggle_gold = False
+          toggle_beacon = not toggle_beacon
+          # text[2] = font.render('Beacon [B] to toggle', False, beacon_color)
+
+
 
           # else:
           # 	print('fuck')
@@ -234,8 +342,18 @@ def main(win, width, num_rows):
       # 		start = None
       # 		end = None
       # 		grid = make_grid(ROWS, width)
+      win.fill(WHITE)
+      pygame.draw.rect(win, BLACK, area)
+      draw_grid(width, ROWS, margin, grid, win)
+      # win.blit(text[0], rect[0])
+      render_text(text, rect, win)
+      pygame.display.flip()
+
+
+
+
 
   pygame.quit()
 
 
-main(WIN, WIDTH, 8)
+main(WIN, 8)
