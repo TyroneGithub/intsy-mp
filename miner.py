@@ -39,68 +39,6 @@ class GameObj:
     self.col = col
 
 
-
-
-def h(p1, p2):
-  x1, y1 = p1
-  x2, y2 = p2
-  return abs(x1 - x2) + abs(y1 - y2)
-
-
-def reconstruct_path(came_from, current, draw):
-  while current in came_from:
-    current = came_from[current]
-    current.make_path()
-    draw()
-
-
-def algorithm(draw, grid, start, end):
-  count = 0
-  open_set = PriorityQueue()
-  open_set.put((0, count, start))
-  came_from = {}
-  g_score = {spot: float("inf") for row in grid for spot in row}
-  g_score[start] = 0
-  f_score = {spot: float("inf") for row in grid for spot in row}
-  f_score[start] = h(start.get_pos(), end.get_pos())
-
-  open_set_hash = {start}
-
-  while not open_set.empty():
-    for event in pygame.event.get():
-      if event.type == pygame.QUIT:
-        pygame.quit()
-
-    current = open_set.get()[2]
-    open_set_hash.remove(current)
-
-    if current == end:
-      reconstruct_path(came_from, end, draw)
-      end.make_end()
-      return True
-
-    for neighbor in current.neighbors:
-      temp_g_score = g_score[current] + 1
-
-      if temp_g_score < g_score[neighbor]:
-        came_from[neighbor] = current
-        g_score[neighbor] = temp_g_score
-        f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos())
-        if neighbor not in open_set_hash:
-          count += 1
-          open_set.put((f_score[neighbor], count, neighbor))
-          open_set_hash.add(neighbor)
-          neighbor.make_open()
-
-      draw()
-
-      if current != start:
-        current.make_closed()
-
-  return False
-
-
-
 def init_grid(rows):
   grid = []
   for row in range(rows):
@@ -137,7 +75,7 @@ def initialize_entities(grid):
   row, col = miner.get_pos()
   # grid[row][col].set_obj(miner)
   grid[row][col].miner()
-  # grid[row][col].init_front(grid)
+  grid[row][col].init_front(grid)
 
   # grid[row][col].update_neighbors(grid)
 
@@ -164,9 +102,11 @@ def move(miner, grid, row, col, win, ROWS, width):
     # print(x, y, 'prev')
     # print(row, col, 'new')  
     # if 
-    front = grid[x][y].get_front()
+    # front = grid[x][y].get_front()
     grid[x][y].reset()
     miner.update_pos(row, col)
+    grid[row][col].scan(grid, ROWS)
+    # print(grid[row][col].get_neighbors())
     # grid[row][col].front = front
     # grid[row][col].front_pos = grid[x][y].get_front_pos()
     # grid[row][col].scan(grid, lambda: draw_grid(width,ROWS, 1, grid, win))

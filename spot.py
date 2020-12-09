@@ -22,7 +22,7 @@ class Spot:
     # self.width = width
     self.total_rows = total_rows
     self.front = None
-    self.front_pos = None
+    self.front_pos = 'right'
     self.game_obj = game_obj
     self.color = WHITE if self.game_obj is None else self.init_color()
 
@@ -134,45 +134,78 @@ class Spot:
         neighbor.reset()
 
   def init_front(self, grid):
-    self.front = grid[self.row][self.col + 1]
-    self.front_pos = 'right'
-    print(self.front_pos)
-    self.front.neighbor()
+    # self.front = grid[self.row][self.col + 1]
+    self.front_pos = 'top'
+    # print(self.front_pos)
+    # self.front.neighbor()
+
+  def scan_direction(self, grid, num_rows):
+    #top
+    # top = []
+    self.neighbors = []
+    n_row = 0
+    n_col = 0
+    for row in range(num_rows):
+      for col in range(num_rows):
+    
+        if self.front_pos == 'top' and self.row > row and self.col == col:
+          self.neighbors.append(None if grid[row][col].get_obj() is 
+                            None else grid[row][col].get_obj().get_type())
+        elif self.front_pos == 'bottom' and self.row < row and self.col == col:
+          self.neighbors.append(None if grid[row][col].get_obj() is 
+                            None else grid[row][col].get_obj().get_type())
+        if self.front_pos == 'right' and self.col < col and self.row == row:
+          self.neighbors.append(None if grid[row][col].get_obj() is 
+                            None else grid[row][col].get_obj().get_type())
+        elif self.front_pos == 'left' and self.col > col and self.row == row:
+          self.neighbors.append(None if grid[row][col].get_obj() is 
+                            None else grid[row][col].get_obj().get_type())
+
+        
+    # self.neighbors = top
+    
+  def get_neighbors(self):
+    return self.neighbors
+
 
   def rotate_front(self, grid):
-    front_row, front_col = self.front.get_pos()
-    self.neighbors = []
+    # front_row, front_col = self.front.get_pos()
+    # self.neighbors = []
     try:
-      if self.col < self.total_rows - 1 and self.front_pos=='right':
-
-        self.front.reset()
-        self.front = self.bottom_front(grid)
+      if self.front_pos=='right':
         self.front_pos = 'bottom'
-        self.front.neighbor()
-        self.neighbors.append(self.bottom_front(grid))
+        # self.front.reset()
+        # self.front = self.bottom_front(grid)
+        # self.front_pos = 'bottom'
+        # self.front.neighbor()
+        # self.neighbors.append(self.bottom_front(grid))
 
-      elif self.col > 0 and self.front_pos=='left':
-
-        self.front.reset()
-        self.front = self.top_front(grid)
+      elif self.front_pos=='left':
         self.front_pos = 'top'
-        self.front.neighbor()
-        self.neighbors.append(self.top_front(grid))
 
-      elif self.row < self.total_rows - 1 and self.front_pos=='bottom':
+        # self.front.reset()
+        # self.front = self.top_front(grid)
+        # self.front_pos = 'top'
+        # self.front.neighbor()
+        # self.neighbors.append(self.top_front(grid))
 
-        self.front.reset()
-        self.front = self.left_front(grid)
+      elif self.front_pos=='bottom':
         self.front_pos = 'left'
-        self.front.neighbor()
-        self.neighbors.append(self.left_front(grid))
 
-      elif self.row > 0 and self.front_pos=='top':
-        self.front.reset()
-        self.front = self.right_front(grid)
+        # self.front.reset()
+        # self.front = self.left_front(grid)
+        # self.front_pos = 'left'
+        # self.front.neighbor()
+        # self.neighbors.append(self.left_front(grid))
+
+      elif self.front_pos=='top':
         self.front_pos = 'right'
-        self.front.neighbor()
-        self.neighbors.append(self.right_front(grid))
+        
+        # self.front.reset()
+        # self.front = self.right_front(grid)
+        # self.front_pos = 'right'
+        # self.front.neighbor()
+        # self.neighbors.append(self.right_front(grid))
 
 
     except IndexError:
@@ -216,13 +249,18 @@ class Spot:
   def top_front(self, grid):
     return grid[self.row - 1][self.col]
 
-  def scan(self, grid, draw):
-    # self.rotate_front(grid)
-    # self.rotate_front(grid)
+  def scan(self, grid, num_rows):
     for i in range(4):
+      self.scan_direction(grid, num_rows)
       self.rotate_front(grid)
-      grid[self.row][self.col].miner()
-      draw()
-      pygame.time.delay(300)
+      print(self.front_pos, self.neighbors)
+    # self.rotate_front(grid)
+    # self.rotate_front(grid)
+    # for i in range(4):
+    #   self.rotate_front(grid)
+    #   grid[self.row][self.col].miner()
+    #   draw()
+      pygame.time.delay(200)
       # print("h")
+    # return points
       
