@@ -4,6 +4,7 @@ from queue import PriorityQueue
 from spot import Spot
 from gui_components import GUI
 import random
+from datetime import datetime
 
 pygame.init()
 WIN = pygame.display.set_mode((1000, 700))
@@ -122,6 +123,7 @@ def draw_grid(width, dim, margin, grid, win):
         image = pygame.transform.scale(image, ((margin*2 + width),
                     (margin*2 + width)))
         win.blit(image, rect)
+    
 
 def get_clicked_pos(pos, width, margin):
   row = pos[1] // (width + margin)
@@ -131,7 +133,7 @@ def get_clicked_pos(pos, width, margin):
 
 
 def initialize_entities(grid):
-  miner = GameObj(0, 3, "miner")
+  miner = GameObj(0, 0, "miner")
   row, col = miner.get_pos()
   # grid[row][col].set_obj(miner)
   grid[row][col].miner()
@@ -141,47 +143,79 @@ def initialize_entities(grid):
 
   return miner
 
-def check(grid, row, col):
-  try:
+def check(grid, row, col, ROWS):
+  if  row >= 0 <= col and row < ROWS > col:
     if grid[row][col].get_obj() is not None:
-      # if grid[row][col].is_pit():
-      #   print('pit')
-      # if grid[row][col].is_beacon():
-      #   print('beacon')
+      if grid[row][col].is_pit():
+        return 'pit'
+      if grid[row][col].is_beacon():
+        print('beacon')
       if grid[row][col].is_gold():
         return 'gold'
-    return None
-  except IndexError:
-    return None
+    else:
+      return None
+  return None
 
 def move(miner, grid, row, col, win, ROWS, width):
   x, y = miner.get_pos()
-  print(x, y, 'prev')
-  print(row, col, 'new')
-  front = grid[x][y].get_front()
-  grid[x][y].reset()
-  miner.update_pos(row, col)
-  # grid[row][col].front = front
-  # grid[row][col].front_pos = grid[x][y].get_front_pos()
-  # grid[row][col].scan(grid, lambda: draw_grid(win, grid, ROWS, width))
-  # grid[row][col].update_front(grid)
-  grid[row][col].miner()
-  # draw()
-  # check(grid, row, col)
+ 
 
-  # draw_grid(width, ROWS, 1, grid, win)
+  if  row >= 0 <= col and row < ROWS > col:
+    # print(x, y, 'prev')
+    # print(row, col, 'new')  
+    # if 
+    front = grid[x][y].get_front()
+    grid[x][y].reset()
+    miner.update_pos(row, col)
+    # grid[row][col].front = front
+    # grid[row][col].front_pos = grid[x][y].get_front_pos()
+    # grid[row][col].scan(grid, lambda: draw_grid(width,ROWS, 1, grid, win))
+    # draw_grid(width, rows, 1, grid, win)
+    # grid[row][col].update_front(grid)
+    grid[row][col].miner()
+  else:
+    # print('fail')
+    miner.update_pos(x, y)
+    grid[x][y].miner()
+    return
 
 
 
-def random_move(miner, grid, win, rows, width , draw):
+def search_gold(grid, rows):
+  for row in range(rows):
+    for col in range(rows):
+      if grid[row][col].is_gold() is not None:
+        return True
+  return False
+
+
+def random_move(miner, grid, win, rows, width):
   x, y = miner.get_pos()
-  
-  for i in range(7):
-    x+=1
-    # move(miner,grid, x, y, win, rows, width, lambda: draw())
-    draw()
-    pygame.time.delay(500)
+  run = False
+  ctr= 0
+  random.seed(datetime.now())
+  if search_gold(grid, rows):
+    run = True
+    while run:
+      num = random.randint(1, 4)
+      if num == 1:
+        x = x + 1 if x < rows else x - 1
+      elif num == 2:
+        x = x - 1 if x >= 0 else x + 1
+      elif num == 3:
+        y =y + 1 if y < rows else y - 1
+      elif num == 4:
+        y = y - 1 if y >= 0 else y + 1
+      move(miner,grid, x, y, win, rows, width)    
+      draw_grid(width, rows, 1, grid, win)
+      pygame.display.flip()
+      ctr+=1
+      print(ctr)
+      if check(grid, x, y, rows) == 'gold' or check(grid, x, y, rows) == 'pit':
+        break
+      pygame.time.delay(100)
 
+    
     # print('h')
 
 
@@ -251,7 +285,7 @@ def main(win, num_rows):
       if event.type == pygame.MOUSEBUTTONDOWN:
         pos = pygame.mouse.get_pos()
         if event.button == 1 and butt_container.collidepoint(pos):
-          print('hello')
+          random_move(miner, grid, win, ROWS, width)
         if event.button == 1 and area.collidepoint(pos):
           row, col = get_clicked_pos(pos, width, margin)
           # print(row, col)

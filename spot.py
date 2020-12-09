@@ -36,6 +36,9 @@ class Spot:
 
       elif self.is_gold():
         return GREEN
+
+      elif self.is_front():
+        return BLACK
       
       
       # elif self.game_obj
@@ -44,11 +47,11 @@ class Spot:
     return self.row, self.col
 
   def is_pit(self):
-    return self.game_obj.get_type() == "pit"
+    return self.game_obj.get_type() == "pit" if self.game_obj is not None else None
     # return self.color == RED
 
   def is_gold(self):
-    return self.game_obj.get_type() == "gold"
+    return self.game_obj.get_type() == "gold" if self.game_obj is not None else None
 
     # return self.color == GREEN
 
@@ -56,8 +59,10 @@ class Spot:
     return self.color == ORANGE
 
   def is_beacon(self):
-    return self.game_obj.get_type() == "beacon"
+    return self.game_obj.get_type() == "beacon" if self.game_obj is not None else None
 
+  def is_front(self):
+    return self.game_obj.get_type() == "front" if self.game_obj is not None else None
     # return self.color == TURQUOISE
 
   def is_neighbor(self):
@@ -67,7 +72,7 @@ class Spot:
     self.color = WHITE if self.game_obj is None else self.init_color()
 
   def miner(self):
-    print('hello')
+    # print('hello')
     self.color = ORANGE
 
   def pit(self):
