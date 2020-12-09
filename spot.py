@@ -18,37 +18,56 @@ class Spot:
     self.col = col
     # self.x = row * width
     # self.y = col * width
-    self.color = WHITE
     self.neighbors = []
     # self.width = width
     self.total_rows = total_rows
     self.front = None
     self.front_pos = None
     self.game_obj = game_obj
+    self.color = WHITE if self.game_obj is None else self.init_color()
+
+  def init_color(self):
+    if self.game_obj is not None:
+      if self.is_pit():
+        return RED
+
+      elif self.is_beacon():
+        return TURQUOISE
+
+      elif self.is_gold():
+        return GREEN
+      
+      
+      # elif self.game_obj
 
   def get_pos(self):
     return self.row, self.col
 
   def is_pit(self):
-    return self.game_obj.get_type()
+    return self.game_obj.get_type() == "pit"
     # return self.color == RED
 
   def is_gold(self):
-    return self.color == GREEN
+    return self.game_obj.get_type() == "gold"
+
+    # return self.color == GREEN
 
   def is_miner(self):
     return self.color == ORANGE
 
   def is_beacon(self):
-    return self.color == TURQUOISE
+    return self.game_obj.get_type() == "beacon"
+
+    # return self.color == TURQUOISE
 
   def is_neighbor(self):
     return self.color == BLACK
 
   def reset(self):
-    self.color = WHITE
+    self.color = WHITE if self.game_obj is None else self.init_color()
 
   def miner(self):
+    print('hello')
     self.color = ORANGE
 
   def pit(self):
@@ -202,4 +221,3 @@ class Spot:
       pygame.time.delay(300)
       # print("h")
       
-
