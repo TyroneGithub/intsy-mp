@@ -24,7 +24,9 @@ class Spot:
     self.front = None
     self.front_pos = 'right'
     self.game_obj = game_obj
-    self.color = WHITE if self.game_obj is None else self.init_color()
+    self.color = self.init_color()
+    self.visited_times = 0
+    self.visits = []
 
   def init_color(self):
     if self.game_obj is not None:
@@ -39,6 +41,11 @@ class Spot:
 
       elif self.is_front():
         return BLACK
+      
+      elif self.is_visited():
+        return GREY
+      
+    return WHITE
       
       
       # elif self.game_obj
@@ -64,6 +71,8 @@ class Spot:
   def is_front(self):
     return self.game_obj.get_type() == "front" if self.game_obj is not None else None
     # return self.color == TURQUOISE
+  def is_visited(self):
+    return self.game_obj.get_type() == "visited" if self.game_obj is not None else None
 
   def is_neighbor(self):
     return self.color == BLACK
@@ -138,11 +147,15 @@ class Spot:
     self.front_pos = 'top'
     # print(self.front_pos)
     # self.front.neighbor()
+  
+  def get_visit_num(self):
+    return self.visited_times
 
   def scan_direction(self, grid, num_rows):
     #top
     # top = []
     self.neighbors = []
+    self.visits = []
     n_row = 0
     n_col = 0
     for row in range(num_rows):
@@ -151,18 +164,29 @@ class Spot:
         if self.front_pos == 'top' and self.row > row and self.col == col:
           self.neighbors.append(None if grid[row][col].get_obj() is 
                             None else grid[row][col].get_obj().get_type())
+          if grid[row][col].is_visited():
+            self.visits.append(grid[row][col].get_visit_num())
         elif self.front_pos == 'bottom' and self.row < row and self.col == col:
           self.neighbors.append(None if grid[row][col].get_obj() is 
                             None else grid[row][col].get_obj().get_type())
+          if grid[row][col].is_visited():
+            self.visits.append(grid[row][col].get_visit_num())
         if self.front_pos == 'right' and self.col < col and self.row == row:
           self.neighbors.append(None if grid[row][col].get_obj() is 
                             None else grid[row][col].get_obj().get_type())
+          if grid[row][col].is_visited():
+            self.visits.append(grid[row][col].get_visit_num())
         elif self.front_pos == 'left' and self.col > col and self.row == row:
           self.neighbors.append(None if grid[row][col].get_obj() is 
                             None else grid[row][col].get_obj().get_type())
+          if grid[row][col].is_visited():
+            self.visits.append(grid[row][col].get_visit_num())
 
-        
     # self.neighbors = top
+    if self.front_pos == 'top' or self.front_pos == 'left':
+      self.neighbors.reverse()
+      # print(self.neighbors, self.front_pos)
+
     
   def get_neighbors(self):
     return self.neighbors
@@ -249,18 +273,60 @@ class Spot:
   def top_front(self, grid):
     return grid[self.row - 1][self.col]
 
-  def scan(self, grid, num_rows):
+  def increase_visit(self):
+    self.visited_times -= 5
+
+  def evaluate(self, points):
+    directions = ['top', 'bottom', 'left', 'right']
+    index = directions.index(self.front_pos)
+    # iterate none none none
+    ctr = 0 
+    for neighbor in self.neighbors:
+      if neighbor is None:
+        points[index] += 1000
+      if neighbor == 'gold':
+        points[index] += 1000000
+        break
+      if neighbor == 'pit' :
+        points[index] -= 1000
+        break
+      if neighbor == 'beacon':
+        points[index] += 100000
+        break
+      if neighbor == 'visited':
+        print(self.visited_times)
+        points[index] -= 10 + self.visited_times
+        if None in self.neighbors:
+          points[index] += 100        
+        break
+
+    if 'visited' not in self.neighbors:
+      points[index] += 100
+    
+
+
+      #visited points -= 5
+    if not self.neighbors:
+      points[index] = -1e9
+    # else:
+    #   if self.neighbors[-1] == 'visited':
+    #         points[index] -= 100
+    # else:
+    #   points[index] -= 1e7
+
+    return points
+
+  def scan(self, grid, num_rows, points):
+    neighbor_cont= [[], [], [], []]
+    directions = ['top', 'bottom', 'left', 'right']
+
     for i in range(4):
       self.scan_direction(grid, num_rows)
+      neighbor_cont[directions.index(self.front_pos)] += self.neighbors
+      points = self.evaluate(points)
+      # print(self.visits, self.front_pos)
+      # print(self.neighbors, self.front_pos)
       self.rotate_front(grid)
-      print(self.front_pos, self.neighbors)
-    # self.rotate_front(grid)
-    # self.rotate_front(grid)
-    # for i in range(4):
-    #   self.rotate_front(grid)
-    #   grid[self.row][self.col].miner()
-    #   draw()
-      pygame.time.delay(200)
-      # print("h")
-    # return points
+      pygame.time.delay(50)
+    return points, neighbor_cont
       

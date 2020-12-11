@@ -20,7 +20,7 @@ PURPLE = (128, 0, 128)
 ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
-
+BACKGROUND = (28, 24, 20)
 
 class GameObj:
   def __init__(self, row, col, obj_type):
@@ -56,8 +56,24 @@ def draw_grid(width, dim, margin, grid, win):
       # print(color)
       rect = pygame.draw.rect(win, color, [(margin + width) * column + margin,
                     (margin + width) * row + margin,width,width])
+      if grid[row][column].get_obj() is None:
+        image = pygame.image.load('None.png').convert()
+        image = pygame.transform.scale(image, ((margin*2 + width),
+                    (margin*2 + width)))
+        win.blit(image, rect)
+    
       if grid[row][column].is_miner():
-        image = pygame.image.load('arrow.png').convert()
+        image = pygame.image.load('Miner.png').convert()
+        image = pygame.transform.scale(image, ((margin*2 + width),
+                    (margin*2 + width)))
+        win.blit(image, rect)
+      if grid[row][column].is_gold():
+        image = pygame.image.load('Goal.png').convert()
+        image = pygame.transform.scale(image, ((margin*2 + width),
+                    (margin*2 + width)))
+        win.blit(image, rect)
+      if grid[row][column].is_pit():
+        image = pygame.image.load('Pit.png').convert()
         image = pygame.transform.scale(image, ((margin*2 + width),
                     (margin*2 + width)))
         win.blit(image, rect)
@@ -96,28 +112,83 @@ def check(grid, row, col, ROWS):
 
 def move(miner, grid, row, col, win, ROWS, width):
   x, y = miner.get_pos()
- 
 
   if  row >= 0 <= col and row < ROWS > col:
-    # print(x, y, 'prev')
-    # print(row, col, 'new')  
-    # if 
-    # front = grid[x][y].get_front()
     grid[x][y].reset()
     miner.update_pos(row, col)
-    grid[row][col].scan(grid, ROWS)
-    # print(grid[row][col].get_neighbors())
-    # grid[row][col].front = front
-    # grid[row][col].front_pos = grid[x][y].get_front_pos()
-    # grid[row][col].scan(grid, lambda: draw_grid(width,ROWS, 1, grid, win))
-    # draw_grid(width, rows, 1, grid, win)
-    # grid[row][col].update_front(grid)
     grid[row][col].miner()
   else:
-    # print('fail')
     miner.update_pos(x, y)
     grid[x][y].miner()
     return
+
+def compare_len(arr1, arr2):
+  return len(arr1) >= len(arr2)    
+
+def smart_move(miner, grid, win, ROWS, width, points):
+  if search_gold(grid, ROWS):
+    run = True
+    row, col = miner.get_pos()
+
+    while run:
+      points = [0, 0, 0, 0]
+      visited = GameObj(row, col, 'visited')
+      if grid[row][col].is_visited():
+        grid[row][col].increase_visit()
+      else:
+        grid[row][col].set_obj(visited)
+
+      points, neighbor_cont = grid[row][col].scan(grid, ROWS, points)
+      directions = ['top', 'bottom', 'left', 'right']
+      max_index = points.index(max(points))
+      direction = directions[max_index]
+      # print(points, direction)
+      grid[row][col].reset()
+
+      # print(direction == points[2],  points[2] == points[3])
+      # if (max_index == 2 and points[2] == points[3]):
+      #   print('putangina')
+         
+      #   b, t = neighbor_cont[:2]
+      #   l, r = neighbor_cont[2:]
+      #   if points[0] == points[1]:
+      #     if compare_len(t, b):
+      #       direction == 'top'
+      #     else:
+      #       direction == 'bottom'
+
+      #   if points[2] == points[3]:
+      #     print('putangina')
+      #     if compare_len(l, r):
+      #       direction == 'left'
+      #     else:
+      #       direction == 'right' 
+
+      if direction == 'top':
+        row -= 1
+      elif direction == 'bottom':
+        row += 1
+      elif direction == 'left':
+        col -= 1
+      elif direction == 'right':
+        col += 1
+      miner.update_pos(row, col)
+      grid[row][col].miner()
+      if check(grid, row, col, ROWS) == 'gold' or check(grid, row, col, ROWS) == 'pit':
+        break
+      draw_grid(width, ROWS, 1, grid, win)
+      pygame.display.flip()
+      pygame.time.delay(100)
+
+  # if  row >= 0 <= col and row < ROWS > col:
+  #   pass
+  #   # grid[x][y].reset()
+  #   # miner.update_pos(row, col)
+  #   # points = grid[row][col].scan(grid, ROWS, points)
+  #   # grid[row][col].miner()
+  # else:
+  #   miner.update_pos(x, y)
+  #   grid[x][y].miner()
 
 
 
@@ -129,31 +200,33 @@ def search_gold(grid, rows):
   return False
 
 
+def randomize_move(x, y, num, rows):
+  if num == 1:
+    x = x + 1 if x < rows else x - 1
+  elif num == 2:
+    x = x - 1 if x >= 0 else x + 1
+  elif num == 3:
+    y =y + 1 if y < rows else y - 1
+  elif num == 4:
+    y = y - 1 if y >= 0 else y + 1
+  return x, y
+
+
 def random_move(miner, grid, win, rows, width):
   x, y = miner.get_pos()
   run = False
-  ctr= 0
   random.seed(datetime.now())
   if search_gold(grid, rows):
     run = True
     while run:
       num = random.randint(1, 4)
-      if num == 1:
-        x = x + 1 if x < rows else x - 1
-      elif num == 2:
-        x = x - 1 if x >= 0 else x + 1
-      elif num == 3:
-        y =y + 1 if y < rows else y - 1
-      elif num == 4:
-        y = y - 1 if y >= 0 else y + 1
+      x, y = randomize_move(x, y, num, rows)
       move(miner,grid, x, y, win, rows, width)    
       draw_grid(width, rows, 1, grid, win)
       pygame.display.flip()
-      ctr+=1
-      print(ctr)
       if check(grid, x, y, rows) == 'gold' or check(grid, x, y, rows) == 'pit':
         break
-      pygame.time.delay(100)
+      # pygame.time.delay(100)
 
     
     # print('h')
@@ -165,7 +238,7 @@ def main(win, num_rows):
   grid = init_grid(ROWS)
   width = 1000 // (ROWS * 2)
   # print(len(grid), len(grid[0]))
-  margin = 1
+  margin = 2
   start = None
   end = None
 
@@ -182,6 +255,7 @@ def main(win, num_rows):
   beacons = []
   gold = None
   area = pygame.Rect(0, 0, 1030//2, 515)
+  points = [0, 0, 0, 0]
 
   texts = ['[F] to toggle Pit ', '[B] to toggle Beacon', '[G] to toggle Gold']
   font = pygame.font.SysFont('Arial', 18)
@@ -200,7 +274,7 @@ def main(win, num_rows):
 
     for event in pygame.event.get():
       win.fill(WHITE)
-      pygame.draw.rect(win, BLACK, area)
+      pygame.draw.rect(win, BACKGROUND, area)
       draw_grid(width, ROWS, margin, grid, win)
 
       butt_container = button_rect
@@ -225,7 +299,8 @@ def main(win, num_rows):
       if event.type == pygame.MOUSEBUTTONDOWN:
         pos = pygame.mouse.get_pos()
         if event.button == 1 and butt_container.collidepoint(pos):
-          random_move(miner, grid, win, ROWS, width)
+          # random_move(miner, grid, win, ROWS, width)
+          smart_move(miner, grid, win, ROWS, width, points)
         if event.button == 1 and area.collidepoint(pos):
           row, col = get_clicked_pos(pos, width, margin)
           # print(row, col)
@@ -250,6 +325,7 @@ def main(win, num_rows):
 
           
           if toggle_gold and gold is None:
+            toggle_gold = False
             gold = GameObj(row, col, "gold")
             grid[row][col].set_obj(gold)
             grid[row][col].gold()       
@@ -324,4 +400,4 @@ def main(win, num_rows):
   pygame.quit()
 
 
-main(WIN, 8)
+main(WIN, 9)
