@@ -415,4 +415,4 @@ def main(win, num_rows):
   pygame.quit()
 
 
-main(WIN, 64)
+main(WIN, 30)
