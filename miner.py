@@ -50,30 +50,45 @@ def init_grid(rows):
   return grid
 
 def draw_grid(width, dim, margin, grid, win):
+  font = pygame.font.SysFont('Arial', 18)
+
   for row in range(dim):
     for column in range(dim):
       color = grid[row][column].get_color()
       # print(color)
+      # word = str(grid[row][column].get_visit_num())
+      # text = font.render(word, False, BLACK)
       rect = pygame.draw.rect(win, color, [(margin + width) * column + margin,
                     (margin + width) * row + margin,width,width])
-      if grid[row][column].get_obj() is None:
-        image = pygame.image.load('None.png').convert()
-        image = pygame.transform.scale(image, ((margin*2 + width),
-                    (margin*2 + width)))
-        win.blit(image, rect)
+
+      # win.blit(text, rect)
+      # if grid[row][column].get_obj() is None:
+      #   image = pygame.image.load('None.png').convert()
+      #   image = pygame.transform.scale(image, ((margin*2 + width),
+      #               (margin*2 + width)))
+      #   win.blit(image, rect)
     
-      if grid[row][column].is_miner():
-        image = pygame.image.load('Miner.png').convert()
-        image = pygame.transform.scale(image, ((margin*2 + width),
-                    (margin*2 + width)))
-        win.blit(image, rect)
+
       if grid[row][column].is_gold():
         image = pygame.image.load('Goal.png').convert()
         image = pygame.transform.scale(image, ((margin*2 + width),
                     (margin*2 + width)))
         win.blit(image, rect)
+        
       if grid[row][column].is_pit():
         image = pygame.image.load('Pit.png').convert()
+        image = pygame.transform.scale(image, ((margin*2 + width),
+                    (margin*2 + width)))
+        win.blit(image, rect)
+
+      if grid[row][column].is_visited():
+        image = pygame.image.load('Visited.png').convert()
+        image = pygame.transform.scale(image, ((margin*2 + width),
+                    (margin*2 + width)))
+        win.blit(image, rect)
+
+      if grid[row][column].is_miner():
+        image = pygame.image.load('Miner.png').convert()
         image = pygame.transform.scale(image, ((margin*2 + width),
                     (margin*2 + width)))
         win.blit(image, rect)
@@ -114,6 +129,20 @@ def move(miner, grid, row, col, win, ROWS, width):
   x, y = miner.get_pos()
 
   if  row >= 0 <= col and row < ROWS > col:
+    points = [0, 0, 0, 0]
+    print()
+    directions = ['top', 'bottom', 'left', 'right']
+
+    max_index = points.index(max(points))
+    direction = directions[max_index]
+    points, neighbor_cont = grid[x][y].scan(grid, ROWS, points)
+
+    visited = GameObj(x, y, 'visited')
+    if grid[x][y].is_visited():
+      grid[x][y].increase_visit()
+    else:
+      grid[x][y].set_obj(visited)
+
     grid[x][y].reset()
     miner.update_pos(row, col)
     grid[row][col].miner()
@@ -132,38 +161,24 @@ def smart_move(miner, grid, win, ROWS, width, points):
 
     while run:
       points = [0, 0, 0, 0]
+
+
+      
+      
+      directions = ['top', 'bottom', 'left', 'right']
+
+      points, neighbor_cont = grid[row][col].scan(grid, ROWS, points)
+      max_index = points.index(max(points))
+      direction = directions[max_index]
+      print(points, direction)
+      print()
       visited = GameObj(row, col, 'visited')
       if grid[row][col].is_visited():
         grid[row][col].increase_visit()
       else:
         grid[row][col].set_obj(visited)
 
-      points, neighbor_cont = grid[row][col].scan(grid, ROWS, points)
-      directions = ['top', 'bottom', 'left', 'right']
-      max_index = points.index(max(points))
-      direction = directions[max_index]
-      # print(points, direction)
       grid[row][col].reset()
-
-      # print(direction == points[2],  points[2] == points[3])
-      # if (max_index == 2 and points[2] == points[3]):
-      #   print('putangina')
-         
-      #   b, t = neighbor_cont[:2]
-      #   l, r = neighbor_cont[2:]
-      #   if points[0] == points[1]:
-      #     if compare_len(t, b):
-      #       direction == 'top'
-      #     else:
-      #       direction == 'bottom'
-
-      #   if points[2] == points[3]:
-      #     print('putangina')
-      #     if compare_len(l, r):
-      #       direction == 'left'
-      #     else:
-      #       direction == 'right' 
-
       if direction == 'top':
         row -= 1
       elif direction == 'bottom':
@@ -176,7 +191,7 @@ def smart_move(miner, grid, win, ROWS, width, points):
       grid[row][col].miner()
       if check(grid, row, col, ROWS) == 'gold' or check(grid, row, col, ROWS) == 'pit':
         break
-      draw_grid(width, ROWS, 1, grid, win)
+      draw_grid(width, ROWS, 2, grid, win)
       pygame.display.flip()
       pygame.time.delay(100)
 
@@ -400,4 +415,4 @@ def main(win, num_rows):
   pygame.quit()
 
 
-main(WIN, 9)
+main(WIN, 64)

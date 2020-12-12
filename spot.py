@@ -10,6 +10,7 @@ PURPLE = (128, 0, 128)
 ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
+BACKGROUND = (28, 24, 20)
 
 
 class Spot:
@@ -45,7 +46,7 @@ class Spot:
       elif self.is_visited():
         return GREY
       
-    return WHITE
+    return BACKGROUND
       
       
       # elif self.game_obj
@@ -274,7 +275,7 @@ class Spot:
     return grid[self.row - 1][self.col]
 
   def increase_visit(self):
-    self.visited_times -= 5
+    self.visited_times -= 100
 
   def evaluate(self, points):
     directions = ['top', 'bottom', 'left', 'right']
@@ -283,7 +284,7 @@ class Spot:
     ctr = 0 
     for neighbor in self.neighbors:
       if neighbor is None:
-        points[index] += 1000
+        points[index] += 10000
       if neighbor == 'gold':
         points[index] += 1000000
         break
@@ -294,25 +295,16 @@ class Spot:
         points[index] += 100000
         break
       if neighbor == 'visited':
-        print(self.visited_times)
-        points[index] -= 10 + self.visited_times
+        points[index] += sum(self.visits) 
         if None in self.neighbors:
           points[index] += 100        
         break
 
-    if 'visited' not in self.neighbors:
-      points[index] += 100
+    # if 'visited' not in self.neighbors:
+    #   points[index] += 100
     
-
-
-      #visited points -= 5
     if not self.neighbors:
       points[index] = -1e9
-    # else:
-    #   if self.neighbors[-1] == 'visited':
-    #         points[index] -= 100
-    # else:
-    #   points[index] -= 1e7
 
     return points
 
