@@ -19,14 +19,14 @@ TURQUOISE = (64, 224, 208)
 class GUI:
 
   @staticmethod
-  def text_list_setup(texts, font, colors):
+  def text_list_setup(texts, font, colors, x, y):
     text_list = []
     text_rect_list = []
-    x = 90
+    # x = 90
     for i in range(len(texts)):
       text_obj = font.render(texts[i], False, colors[i])
       text_rect = text_obj.get_rect()
-      text_rect.center = (x, 600)
+      text_rect.center = (x, y)
       x += 175
       text_list.append(text_obj)
       text_rect_list.append(text_rect)

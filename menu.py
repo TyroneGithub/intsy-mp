@@ -39,7 +39,7 @@ def menu():
         # print('x')
         if event.key == pygame.K_RETURN:
           print(text)
-          main(window, WIDTH, text)
+          main(window, WIDTH)
           # miner.main()
         elif event.key == pygame.K_BACKSPACE:
           text = text[:-1]

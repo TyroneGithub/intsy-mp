@@ -56,12 +56,9 @@ class Spot:
 
   def is_pit(self):
     return self.game_obj.get_type() == "pit" if self.game_obj is not None else None
-    # return self.color == RED
 
   def is_gold(self):
     return self.game_obj.get_type() == "gold" if self.game_obj is not None else None
-
-    # return self.color == GREEN
 
   def is_miner(self):
     return self.color == ORANGE
@@ -71,18 +68,14 @@ class Spot:
 
   def is_front(self):
     return self.game_obj.get_type() == "front" if self.game_obj is not None else None
-    # return self.color == TURQUOISE
+
   def is_visited(self):
     return self.game_obj.get_type() == "visited" if self.game_obj is not None else None
-
-  def is_neighbor(self):
-    return self.color == BLACK
 
   def reset(self):
     self.color = WHITE if self.game_obj is None else self.init_color()
 
   def miner(self):
-    # print('hello')
     self.color = ORANGE
 
   def pit(self):
@@ -112,42 +105,9 @@ class Spot:
   def set_obj(self, game_obj):
     self.game_obj = game_obj
 
-  # def draw(self, win):
-  #   pygame.draw.rect(win, self.color,(self.x, self.y, self.width, self.width))
-
-  def update_neighbors(self, grid):
-    self.neighbors = []
-    if (self.row < self.total_rows - 1
-        and not grid[self.row + 1][self.col].is_miner()):  # DOWN
-
-      self.neighbors.append(grid[self.row + 1][self.col])
-      grid[self.row + 1][self.col].neighbor()
-
-    if self.row > 0 and not grid[self.row - 1][self.col].is_miner():  # UP
-
-      self.neighbors.append(grid[self.row - 1][self.col])
-      grid[self.row - 1][self.col].neighbor()
-
-    if (self.col < self.total_rows - 1
-            and not grid[self.row][self.col + 1].is_miner()):  # RIGHT
-
-      self.neighbors.append(grid[self.row][self.col + 1])
-      grid[self.row][self.col + 1].neighbor()
-
-    if self.col > 0 and not grid[self.row][self.col -1].is_miner():  # LEFT
-
-      self.neighbors.append(grid[self.row][self.col - 1])
-      grid[self.row][self.col - 1].neighbor()
-
-  def reset_neighbors(self):
-    for neighbor in self.neighbors:
-        neighbor.reset()
 
   def init_front(self, grid):
-    # self.front = grid[self.row][self.col + 1]
-    self.front_pos = 'top'
-    # print(self.front_pos)
-    # self.front.neighbor()
+    self.front_pos = 'left'
   
   def get_visit_num(self):
     return self.visited_times
