@@ -1,5 +1,5 @@
 import pygame
-from miner import main
+# from miner import main
 WIDTH = 400
 pygame.display.set_caption("Gold Miner")
 
@@ -39,12 +39,13 @@ def menu():
         # print('x')
         if event.key == pygame.K_RETURN:
           print(text)
-          main(window, WIDTH)
+          # main(window, WIDTH)
           # miner.main()
         elif event.key == pygame.K_BACKSPACE:
           text = text[:-1]
         else:
-          text+=event.unicode
+          if event.unicode >= '0' and event.unicode <= '9':
+            text+=event.unicode
 
     window.fill(WHITE)
     txt_surface = font.render(text, True, color)

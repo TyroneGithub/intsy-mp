@@ -111,13 +111,6 @@ def move(miner, grid, row, col, win, ROWS, width):
   x, y = miner.get_pos()
 
   if  row >= 0 <= col and row < ROWS > col:
-    points = [0, 0, 0, 0]
-    print()
-    directions = ['top', 'bottom', 'left', 'right']
-
-    max_index = points.index(max(points))
-    direction = directions[max_index]
-    points, neighbor_cont = grid[x][y].scan(grid, ROWS, points)
 
     visited = GameObj(x, y, 'visited')
     if grid[x][y].is_visited():
@@ -128,10 +121,10 @@ def move(miner, grid, row, col, win, ROWS, width):
     grid[x][y].reset()
     miner.update_pos(row, col)
     grid[row][col].miner()
+
   else:
     miner.update_pos(x, y)
     grid[x][y].miner()
-    return
 
 def compare_len(arr1, arr2):
   return len(arr1) >= len(arr2)    
@@ -205,8 +198,9 @@ def random_move(miner, grid, win, rows, width):
       num = random.randint(1, 4)
       x, y = randomize_move(x, y, num, rows)
       move(miner,grid, x, y, win, rows, width)    
-      draw_grid(width, rows, 1, grid, win)
+      draw_grid(width, rows, 2, grid, win)
       pygame.display.flip()
+      pygame.time.delay(100)
       if check(grid, x, y, rows) == 'gold' or check(grid, x, y, rows) == 'pit':
         return 'Dead' if check(grid, x, y, rows) == 'pit' else 'Gold Found'
 
@@ -234,6 +228,7 @@ def main(win, num_rows):
   gold = None
   area = pygame.Rect(0, 0, area_w - 260, 515)
   points = [0, 0, 0, 0]
+  input_text = ''
 
   texts = ['[F] to toggle Pit ', '[B] to toggle Beacon', '[G] to toggle Gold']
   button_texts = ['Random', 'Smart']
@@ -241,18 +236,26 @@ def main(win, num_rows):
   font = pygame.font.SysFont('Arial', 18)
   move_ctr, move_ctr_rect = GUI.text_setup('Moves: ', font, 575, 220, BLACK)
   status_text, status_rect = GUI.text_setup('Status: ', font, 575, 300, BLACK)
+  
+  # input_box, input_dim, box = GUI.input_box(font, win, input_text)
+
+  active_input = False
+
   curr_status_text = 'Alive'
 
   while run:
     pit_color = RED if toggle_pit else BLACK
     gold_color = GREEN if toggle_gold else BLACK
     beacon_color = TURQUOISE if toggle_beacon else BLACK
+    input_color = TURQUOISE if not active_input else BLUE
     
     colors = [pit_color, beacon_color, gold_color]
 
     text, rect = GUI.text_list_setup(texts, font, colors, 90, 600)
     button_text, button_rect = GUI.text_list_setup(button_texts, font, [WHITE, WHITE],635, 250)
     curr_status, curr_rect = GUI.text_setup(curr_status_text, font, 650, 300, BLACK)
+
+    grid_butt, grid_rect = GUI.text_setup('Generate', font, 750, 10, WHITE)
 
     for event in pygame.event.get():
       win.fill(WHITE)
@@ -262,7 +265,7 @@ def main(win, num_rows):
       
       button_rect[0].width = 120
       button_rect[0].height = 40
-      button_rect[0].center = (600, 150)
+      button_rect[0].center = (615, 150)
       pygame.draw.rect(win, BLUE, button_rect[0])
 
       button_rect[1].width = 120
@@ -270,12 +273,26 @@ def main(win, num_rows):
       button_rect[1].center = (760, 150)
       pygame.draw.rect(win, BLUE, button_rect[1])
 
+      grid_rect.width = 120
+      grid_rect.height = 32
+      grid_rect.center = (770, 25)
+      pygame.draw.rect(win, BLUE, grid_rect)
+
       GUI.render_text(text, rect, win)
       GUI.render_text([move_ctr], [move_ctr_rect], win)
       GUI.render_text([status_text, curr_status], [status_rect, curr_rect], win)
-      win.blit(button_text[0], (565,140))
-      win.blit(button_text[1], (735,140))
 
+
+      win.blit(button_text[0], (580,140))
+      win.blit(button_text[1], (735,140))
+      win.blit(grid_butt, (733,14))
+
+
+      input_box, input_dim, box = GUI.input_box(font, win, input_text)
+      win.blit(input_box, input_dim)
+      pygame.draw.rect(win, input_color, box, 2)
+
+      # input_text = GUI.input_box(font, event, win, input_text)
       pygame.display.flip()
 
       if event.type == pygame.QUIT:
@@ -283,14 +300,30 @@ def main(win, num_rows):
 
       if event.type == pygame.MOUSEBUTTONDOWN:
         pos = pygame.mouse.get_pos()
-        if event.button == 1 and button_rect[0].collidepoint(pos):
-          curr_status_text = random_move(miner, grid, win, ROWS, width)
 
-        if event.button == 1 and button_rect[1].collidepoint(pos):
-          curr_status_text = smart_move(miner, grid, win, ROWS, width, points)
-        if event.button == 1 and area.collidepoint(pos):
-          row, col = get_clicked_pos(pos, width, margin)
-          # print(row, col)
+        if event.button == 1 and box.collidepoint(event.pos):
+          active_input = not active_input
+          print(active_input)
+          
+        # if event.type == pygame.KEYDOWN and active_input: 
+
+        if event.button == 1 :
+          if button_rect[0].collidepoint(pos):
+            curr_status_text = random_move(miner, grid, win, ROWS, width)
+
+          if button_rect[1].collidepoint(pos):
+            curr_status_text = smart_move(miner, grid, win, ROWS, width, points)
+
+          if area.collidepoint(pos):
+            row, col = get_clicked_pos(pos, width, margin)
+          
+          if grid_rect.collidepoint(pos):
+            num_rows = int(input_text)
+            if num_rows >= 8 and num_rows <= 64:
+              main(win, num_rows)
+            break
+
+
           if not (toggle_pit or toggle_beacon or toggle_gold):
             x, y = miner.get_pos()
             grid[x][y].rotate_front(grid)
@@ -317,10 +350,16 @@ def main(win, num_rows):
         
       if event.type == pygame.KEYDOWN:
         x, y = miner.get_pos()
+        if active_input:
+          if event.key == pygame.K_BACKSPACE:
+            input_text = input_text[:-1]
+          else:
+            if event.unicode >= '0' and event.unicode <= '9':
+              input_text+=event.unicode
+              print(input_text)
+
         if event.key == pygame.K_a:
-          main(win, 24)
-          break
-          # move(miner, grid, x, y-1, win, ROWS, width)
+          move(miner, grid, x, y-1, win, ROWS, width)
         if event.key == pygame.K_d:
           move(miner, grid, x, y+1, win, ROWS, width)
         if event.key == pygame.K_w:
@@ -347,4 +386,4 @@ def main(win, num_rows):
 
 
 
-main(WIN, 64)
+main(WIN, 8)
