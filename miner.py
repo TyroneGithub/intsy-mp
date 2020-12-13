@@ -67,6 +67,10 @@ def draw_grid(width, dim, margin, grid, win):
 
       elif grid[row][column].is_visited():
         image = pygame.image.load('Visited.png').convert()
+        
+      elif grid[row][column].is_beacon():
+        image = pygame.image.load('Beacon.png').convert()
+      
 
       if image is not None:
         image = pygame.transform.scale(image, ((margin*2 + width),
