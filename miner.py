@@ -321,7 +321,7 @@ def main(win, num_rows):
             num_rows = int(input_text)
             if num_rows >= 8 and num_rows <= 64:
               main(win, num_rows)
-            break
+              break
 
 
           if not (toggle_pit or toggle_beacon or toggle_gold):
