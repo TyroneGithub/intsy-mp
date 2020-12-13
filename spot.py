@@ -246,13 +246,13 @@ class Spot:
       if neighbor is None:
         points[index] += 10000
       if neighbor == 'gold':
-        points[index] += 1000000
+        points[index] += 1000000000
         break
       if neighbor == 'pit' :
         points[index] -= 1000
         break
       if neighbor == 'beacon':
-        points[index] += 100000
+        points[index] += 10000000
         break
       if neighbor == 'visited':
         points[index] += sum(self.visits) 

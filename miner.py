@@ -19,7 +19,7 @@ PURPLE = (128, 0, 128)
 ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
-BACKGROUND = (28, 24, 20)
+BACKGROUND = (23, 16, 12)
 
 class GameObj:
   def __init__(self, row, col, obj_type):
@@ -56,6 +56,9 @@ def draw_grid(width, dim, margin, grid, win):
       image = None
       rect = pygame.draw.rect(win, color, [(margin + width) * column + margin,
                     (margin + width) * row + margin,width,width])
+      if grid[row][column].get_obj is None:
+        image = pygame.image.load('None.png').convert()
+
       if grid[row][column].is_miner():
         image = pygame.image.load('Miner.png').convert()
 
@@ -67,11 +70,9 @@ def draw_grid(width, dim, margin, grid, win):
 
       elif grid[row][column].is_visited():
         image = pygame.image.load('Visited.png').convert()
-        
+
       elif grid[row][column].is_beacon():
         image = pygame.image.load('Beacon.png').convert()
-      
-
       if image is not None:
         image = pygame.transform.scale(image, ((margin*2 + width),
                       (margin*2 + width)))
@@ -214,7 +215,8 @@ def random_move(miner, grid, win, rows, width):
 def main(win, num_rows):
   ROWS = int(num_rows)
   grid = init_grid(ROWS)
-  width = 1000 // (ROWS * 2)
+  area_w = 800
+  width = area_w // (ROWS * 2) 
   margin = 2
   start = None
   end = None
@@ -230,7 +232,7 @@ def main(win, num_rows):
   pits = []
   beacons = []
   gold = None
-  area = pygame.Rect(0, 0, 1030//2, 515)
+  area = pygame.Rect(0, 0, area_w - 260, 515)
   points = [0, 0, 0, 0]
 
   texts = ['[F] to toggle Pit ', '[B] to toggle Beacon', '[G] to toggle Gold']
@@ -345,4 +347,4 @@ def main(win, num_rows):
 
 
 
-main(WIN, 9)
+main(WIN, 64)
