@@ -269,16 +269,36 @@ class Spot:
     return points
 
   def scan(self, grid, num_rows, points):
-    neighbor_cont= [[], [], [], []]
     directions = ['top', 'bottom', 'left', 'right']
 
     for i in range(4):
       self.scan_direction(grid, num_rows)
-      neighbor_cont[directions.index(self.front_pos)] += self.neighbors
       points = self.evaluate(points)
-      # print(self.visits, self.front_pos)
-      # print(self.neighbors, self.front_pos)
       self.rotate_front(grid)
       pygame.time.delay(50)
-    return points, neighbor_cont
-      
+    return points
+  
+  def scan2(self, grid, num_rows):
+    directions = ['top', 'bottom', 'left', 'right']
+    items = [None, None, None, None]
+    for i in range(4):
+      item = None
+      self.scan_direction(grid, num_rows)
+      index = directions.index(self.front_pos)
+      if 'pit' in self.neighbors:
+        item = 'pit'
+      elif 'beacon' in self.neighbors:
+        item = 'beacon'
+      elif 'gold' in self.neighbors:
+        item = 'gold'
+      elif 'visited' in self.neighbors:
+        item = 'visited'
+      if not self.neighbors:
+        item = 'edge'
+
+      items[index] = item
+
+      self.rotate_front(grid)
+      pygame.time.delay(50)
+
+    return items
