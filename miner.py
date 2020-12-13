@@ -164,16 +164,13 @@ def smart_move2(miner, grid, win, ROWS, width):
       except ValueError:
         if None in items:
           direction = directions[items.index(None)]
+        elif 'beacon' in items:
+          direction = directions[items.index('beacon')]
         elif 'visited' in items:
           direction = directions[items.index('visited')]
         elif 'pit' in items :
           direction = directions[items.index('pit')]
           row, col = update_pos(row, col, direction)
-          row2 = row
-          col2 = col
-          if check(grid, row2, col2, ROWS) == 'pit': 
-            direction = directions[items.index('pit')]
-            row, col = update_pos(row, col, direction)
         row, col = update_pos(row, col, direction)
       finally:
         miner.update_pos(row, col)
